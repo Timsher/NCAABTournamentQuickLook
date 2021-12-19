@@ -26,6 +26,16 @@ for dDate in dates_firstRound:
             vTeam = game['away_name']
             hScore = game['home_score']
             vScore = game['away_score']
+            if not(hScore is None or vScore is None):
+                hDiff = hScore - vScore
+                vDiff = -hDiff
+            else:
+                continue
+            if not(hRank is None or vRank is None):
+                sSum[hRank - 1] += hDiff
+                sCount[hRank - 1] += 1
+                sSum[vRank - 1] += vDiff
+                sCount[vRank - 1] += 1
             if(hScore is None or vScore is None):
                 print("No score for {:s} vs {:s}".format(hTeam, vTeam))
             else:
@@ -41,6 +51,6 @@ for dDate in dates_firstRound:
                 else:
                     print("No rank for {:s} vs {:s}".format(hTeam, vTeam))
 
-for i in range(0,16):
+for i in range(0, 16):
     rank = i + 1
     print("{:d}: {:.1f}".format(rank, sSum[i]/sCount[i]))
