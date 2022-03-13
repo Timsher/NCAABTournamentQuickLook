@@ -24,6 +24,5 @@ def main():
         pickle.dump(teams.games, fh)
 
 
-
 if __name__ == '__main__':
     main()
