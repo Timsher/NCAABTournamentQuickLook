@@ -13,7 +13,7 @@ from sportsreference.ncaab.boxscore import Boxscore
 import sportsreference.ncaab.teams
 
 
-def get_games(team_name, game_list, team_list):
+def get_games(team_abbr, game_list, team_list):
     opponent_rank = []
     matchup = []
     team_score = []
@@ -25,7 +25,7 @@ def get_games(team_name, game_list, team_list):
         day_str = day.split('-')
         d_date = date(int(day_str[2]), int(day_str[0]), int(day_str[1]))
         for game in game_list[day]:
-            if game['home_name'] == team_name:
+            if game['home_abbr'].lower() == team_abbr.lower():
                 try:
                     opponent_rank.append(team_list[game['away_abbr']].simple_rating_system)
                 except ValueError:
@@ -35,7 +35,7 @@ def get_games(team_name, game_list, team_list):
                 team_score.append(game['home_score'])
                 opponent_score.append(game['away_score'])
                 location.append('vs')
-            elif game['away_name'] == team_name:
+            elif game['away_abbr'].lower() == team_abbr.lower():
                 try:
                     opponent_rank.append(team_list[game['home_abbr']].simple_rating_system)
                 except ValueError:
@@ -63,8 +63,8 @@ def get_games(team_name, game_list, team_list):
     for i in range(0, opponent_rank.size):
         try:
             ret_strings.append("{:s} {:.1f} {:s} {:s} {:d}-{:d}\n".format(date_list[i], opponent_rank[i], location[i],
-                                                                            matchup[i], team_score[i],
-                                                                            opponent_score[i]))
+                                                                          matchup[i], team_score[i],
+                                                                          opponent_score[i]))
             if(team_score[i] > opponent_score[i]):
                 tags.append('win')
             else:
@@ -75,8 +75,8 @@ def get_games(team_name, game_list, team_list):
 
 
 def main():
-    GAMEFILE = '../data/gamelist_20220312.pkl'
-    TEAMFILE = '../data/teamlist_20220312.pkl'
+    GAMEFILE = '../data/gamelist_20220314.pkl'
+    TEAMFILE = '../data/teamlist_20220314.pkl'
 
     with open(GAMEFILE, 'rb') as fh:
         game_list = pickle.load(fh)
@@ -85,7 +85,7 @@ def main():
         team_list = pickle.load(fh)
 
     def update_left_textbox(*args):
-        txt_message_left, tags = get_games(team_name_left.get(), game_list, team_list)
+        txt_message_left, tags = get_games(team_key[team_name_left.get()], game_list, team_list)
         txtbox_left.configure(state='normal')
         txtbox_left.delete(1.0, 'end')
         for i in range(0, len(txt_message_left)):
@@ -93,7 +93,7 @@ def main():
         txtbox_left.configure(state='disabled')
 
     def update_right_textbox(*args):
-        txt_message_right, tags = get_games(team_name_right.get(), game_list, team_list)
+        txt_message_right, tags = get_games(team_key[team_name_right.get()], game_list, team_list)
         txtbox_right.configure(state='normal')
         txtbox_right.delete(1.0, 'end')
         for i in range(0, len(txt_message_right)):
@@ -101,8 +101,10 @@ def main():
         txtbox_right.configure(state='disabled')
 
     team_name_list = []
+    team_key = {}
     for t in team_list:
         team_name_list.append(t.name)
+        team_key[t.name] = t.abbreviation
 
     win = tk.Tk()
     win.title("NCAA Basketball Team Comparison")
