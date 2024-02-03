@@ -9,11 +9,14 @@ from datetime import date
 
 import numpy as np
 
-from sportsreference.ncaab.boxscore import Boxscore
-import sportsreference.ncaab.teams
 
-
-def get_games(team_abbr, game_list, team_list):
+def get_games(team_abbr, game_list):
+    """
+    Given a abbreviation of a team returns a list of games played by that team and whether they won or lost
+    :param team_abbr: Abbreviation of team to get game list
+    :param game_list: List of all games played during current season
+    :return: List of games played by that team, list of whether they won or lost
+    """
     opponent_rank = []
     matchup = []
     team_score = []
@@ -27,7 +30,7 @@ def get_games(team_abbr, game_list, team_list):
         for game in game_list[day]:
             if game['home_abbr'].lower() == team_abbr.lower():
                 try:
-                    opponent_rank.append(team_list[game['away_abbr']].simple_rating_system)
+                    opponent_rank.append("<<<TEAM RANK>>>")
                 except ValueError:
                     opponent_rank.append(-99.9)
                 date_list.append('({:02d}/{:02d})'.format(d_date.month, d_date.day))
@@ -75,17 +78,13 @@ def get_games(team_abbr, game_list, team_list):
 
 
 def main():
-    GAMEFILE = '../data/gamelist_20220314.pkl'
-    TEAMFILE = '../data/teamlist_20220314.pkl'
+    GAMEFILE = '../data/gamelist_20240127.pkl'
 
     with open(GAMEFILE, 'rb') as fh:
         game_list = pickle.load(fh)
 
-    with open(TEAMFILE, 'rb') as fh:
-        team_list = pickle.load(fh)
-
     def update_left_textbox(*args):
-        txt_message_left, tags = get_games(team_key[team_name_left.get()], game_list, team_list)
+        txt_message_left, tags = get_games(team_key[team_name_left.get()], game_list)
         txtbox_left.configure(state='normal')
         txtbox_left.delete(1.0, 'end')
         for i in range(0, len(txt_message_left)):
@@ -93,7 +92,7 @@ def main():
         txtbox_left.configure(state='disabled')
 
     def update_right_textbox(*args):
-        txt_message_right, tags = get_games(team_key[team_name_right.get()], game_list, team_list)
+        txt_message_right, tags = get_games(team_key[team_name_right.get()], game_list)
         txtbox_right.configure(state='normal')
         txtbox_right.delete(1.0, 'end')
         for i in range(0, len(txt_message_right)):
