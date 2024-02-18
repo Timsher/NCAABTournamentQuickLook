@@ -5,15 +5,16 @@
 import pickle
 import tkinter as tk
 from tkinter import ttk
-from datetime import date
+import datetime
 
 import numpy as np
+import pandas as pd
 
 
-def get_games(team_abbr, game_list):
+def get_games(team_name, game_list):
     """
     Given a abbreviation of a team returns a list of games played by that team and whether they won or lost
-    :param team_abbr: Abbreviation of team to get game list
+    :param team_name: Name of team to get game list
     :param game_list: List of all games played during current season
     :return: List of games played by that team, list of whether they won or lost
     """
@@ -24,30 +25,30 @@ def get_games(team_abbr, game_list):
     location = []
     date_list = []
 
-    for day in game_list:
-        day_str = day.split('-')
-        d_date = date(int(day_str[2]), int(day_str[0]), int(day_str[1]))
-        for game in game_list[day]:
-            if game['home_abbr'].lower() == team_abbr.lower():
-                try:
-                    opponent_rank.append("<<<TEAM RANK>>>")
-                except ValueError:
-                    opponent_rank.append(-99.9)
-                date_list.append('({:02d}/{:02d})'.format(d_date.month, d_date.day))
-                matchup.append(game['away_name'])
-                team_score.append(game['home_score'])
-                opponent_score.append(game['away_score'])
-                location.append('vs')
-            elif game['away_abbr'].lower() == team_abbr.lower():
-                try:
-                    opponent_rank.append(team_list[game['home_abbr']].simple_rating_system)
-                except ValueError:
-                    opponent_rank.append(-99.9)
-                date_list.append('({:02d}/{:02d})'.format(d_date.month, d_date.day))
-                matchup.append(game['home_name'])
-                team_score.append(game['away_score'])
-                opponent_score.append(game['home_score'])
-                location.append('at')
+    # d_date = date(int(day_str[2]), int(day_str[0]), int(day_str[1]))
+    cleaned_list = game_list.query("home_team == '{:s}' or away_team == '{:s}'".format(team_name, team_name))
+    for idx, game in cleaned_list.iterrows():
+        d_date = datetime.datetime.strptime(game['game_day'], "%B %d, %Y")
+        if game['home_team'].lower() == team_name.lower():
+            try:
+                opponent_rank.append(game['away_rank'])
+            except ValueError:
+                opponent_rank.append(-99.9)
+            date_list.append('({:02d}/{:02d})'.format(d_date.month, d_date.day))
+            matchup.append(game['away_team'])
+            team_score.append(game['home_score'])
+            opponent_score.append(game['away_score'])
+            location.append('vs')
+        elif game['away_team'].lower() == team_name.lower():
+            try:
+                opponent_rank.append(game['home_rank'])
+            except ValueError:
+                opponent_rank.append(-99.9)
+            date_list.append('({:02d}/{:02d})'.format(d_date.month, d_date.day))
+            matchup.append(game['home_team'])
+            team_score.append(game['away_score'])
+            opponent_score.append(game['home_score'])
+            location.append('at')
     opponent_rank = np.array(opponent_rank)
     opponent_score = np.array(opponent_score)
     matchup = np.array(matchup)
@@ -81,10 +82,12 @@ def main():
     GAMEFILE = '../data/gamelist_20240127.pkl'
 
     with open(GAMEFILE, 'rb') as fh:
-        game_list = pickle.load(fh)
+        game_list = pickle.load(fh)[0]
+    team_list = np.sort(game_list['home_team'].unique()).tolist()
+
 
     def update_left_textbox(*args):
-        txt_message_left, tags = get_games(team_key[team_name_left.get()], game_list)
+        txt_message_left, tags = get_games(team_name_left.get(), game_list)
         txtbox_left.configure(state='normal')
         txtbox_left.delete(1.0, 'end')
         for i in range(0, len(txt_message_left)):
@@ -92,18 +95,12 @@ def main():
         txtbox_left.configure(state='disabled')
 
     def update_right_textbox(*args):
-        txt_message_right, tags = get_games(team_key[team_name_right.get()], game_list)
+        txt_message_right, tags = get_games(team_name_right.get(), game_list)
         txtbox_right.configure(state='normal')
         txtbox_right.delete(1.0, 'end')
         for i in range(0, len(txt_message_right)):
             txtbox_right.insert('end', txt_message_right[i], tags[i])
         txtbox_right.configure(state='disabled')
-
-    team_name_list = []
-    team_key = {}
-    for t in team_list:
-        team_name_list.append(t.name)
-        team_key[t.name] = t.abbreviation
 
     win = tk.Tk()
     win.title("NCAA Basketball Team Comparison")
@@ -114,13 +111,13 @@ def main():
 
     team_name_left = tk.StringVar()
     cbox_left = ttk.Combobox(win, width=40, textvariable=team_name_left)
-    cbox_left['values'] = team_name_list
+    cbox_left['values'] = team_list
     cbox_left.grid(column=0, row=1)
     cbox_left.current(0)
 
     team_name_right = tk.StringVar()
     cbox_right = ttk.Combobox(win, width=40, textvariable=team_name_right)
-    cbox_right['values'] = team_name_list
+    cbox_right['values'] = team_list
     cbox_right.grid(column=1, row=1)
     cbox_right.current(1)
 

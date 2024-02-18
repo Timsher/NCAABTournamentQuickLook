@@ -22,5 +22,6 @@ def main():
     # with open('../../data/teamlist_20240127.pkl', 'wb') as fh:
     #     pickle.dump(teams, fh)
 
+
 if __name__ == '__main__':
     main()
