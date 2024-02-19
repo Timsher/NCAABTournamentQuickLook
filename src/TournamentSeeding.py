@@ -1,4 +1,4 @@
-from sportsreference.ncaab.boxscore import Boxscores
+# from sportsreference.ncaab.boxscore import Boxscores
 import datetime
 import numpy as np
 

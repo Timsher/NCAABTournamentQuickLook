@@ -13,9 +13,9 @@ import pandas as pd
 
 def get_games(team_name, game_list):
     """
-    Given a abbreviation of a team returns a list of games played by that team and whether they won or lost
-    :param team_name: Name of team to get game list
-    :param game_list: List of all games played during current season
+    Given an abbreviation of a team returns a list of games played by that team and whether they won or lost
+    :param team_name: Name of team to get game list from
+    :param game_list: panda dataframe of all games played during current season
     :return: List of games played by that team, list of whether they won or lost
     """
     opponent_rank = []
@@ -26,12 +26,12 @@ def get_games(team_name, game_list):
     date_list = []
 
     # d_date = date(int(day_str[2]), int(day_str[0]), int(day_str[1]))
-    cleaned_list = game_list.query("home_team == '{:s}' or away_team == '{:s}'".format(team_name, team_name))
+    cleaned_list = game_list.query("home_team == \"{:s}\" or away_team == \"{:s}\"".format(team_name, team_name))
     for idx, game in cleaned_list.iterrows():
         d_date = datetime.datetime.strptime(game['game_day'], "%B %d, %Y")
         if game['home_team'].lower() == team_name.lower():
             try:
-                opponent_rank.append(game['away_rank'])
+                opponent_rank.append(game['away_bracket'])
             except ValueError:
                 opponent_rank.append(-99.9)
             date_list.append('({:02d}/{:02d})'.format(d_date.month, d_date.day))
@@ -41,7 +41,7 @@ def get_games(team_name, game_list):
             location.append('vs')
         elif game['away_team'].lower() == team_name.lower():
             try:
-                opponent_rank.append(game['home_rank'])
+                opponent_rank.append(game['home_bracket'])
             except ValueError:
                 opponent_rank.append(-99.9)
             date_list.append('({:02d}/{:02d})'.format(d_date.month, d_date.day))
@@ -80,11 +80,17 @@ def get_games(team_name, game_list):
 
 def main():
     GAMEFILE = '../data/gamelist_20240127.pkl'
+    RANKINGSFILE = '../data/Rankings_20240218.csv'
 
     with open(GAMEFILE, 'rb') as fh:
         game_list = pickle.load(fh)[0]
     team_list = np.sort(game_list['home_team'].unique()).tolist()
 
+    rankings = pd.read_csv(RANKINGSFILE, sep=',', header=0)
+    game_list = pd.merge(game_list, rankings, left_on='home_team', right_on='Team_Name', how='left')
+    game_list = game_list.rename(columns={'Bracketology_01': 'home_bracket'})
+    game_list = pd.merge(game_list, rankings, left_on='away_team', right_on='Team_Name', how='left')
+    game_list = game_list.rename(columns={'Bracketology_01': 'away_bracket'})
 
     def update_left_textbox(*args):
         txt_message_left, tags = get_games(team_name_left.get(), game_list)
