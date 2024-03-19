@@ -79,8 +79,9 @@ def get_games(team_name, game_list):
 
 
 def main():
-    GAMEFILE = '../data/gamelist_20240127.pkl'
-    RANKINGSFILE = '../data/Rankings_20240218.csv'
+    GAMEFILE = '../data/gamelist_20240319.pkl'
+    RANKINGSFILE = '../data/Rankings_20240319.csv'
+    source_column = 'RPI'
 
     with open(GAMEFILE, 'rb') as fh:
         game_list = pickle.load(fh)[0]
@@ -88,9 +89,9 @@ def main():
 
     rankings = pd.read_csv(RANKINGSFILE, sep=',', header=0)
     game_list = pd.merge(game_list, rankings, left_on='home_team', right_on='Team_Name', how='left')
-    game_list = game_list.rename(columns={'Bracketology_01': 'home_bracket'})
+    game_list = game_list.rename(columns={source_column: 'home_bracket'})
     game_list = pd.merge(game_list, rankings, left_on='away_team', right_on='Team_Name', how='left')
-    game_list = game_list.rename(columns={'Bracketology_01': 'away_bracket'})
+    game_list = game_list.rename(columns={source_column: 'away_bracket'})
 
     def update_left_textbox(*args):
         txt_message_left, tags = get_games(team_name_left.get(), game_list)

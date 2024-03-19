@@ -12,7 +12,7 @@ def main():
     tups = scraper.get_games_season(c_season, box=False, pbp=False)
 
     print("Writing Games")
-    with open('../../data/gamelist_20240127.pkl', 'wb') as fh:
+    with open('../../data/gamelist_20240319.pkl', 'wb') as fh:
         pickle.dump(tups, fh)
 
     # print("Fetching Teams")
