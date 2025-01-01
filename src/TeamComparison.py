@@ -79,8 +79,8 @@ def get_games(team_name, game_list):
 
 
 def main():
-    GAMEFILE = '../data/gamelist_20240319.pkl'
-    RANKINGSFILE = '../data/Rankings_20240319.csv'
+    GAMEFILE = '../data/gamelist_20250101.pkl'
+    RANKINGSFILE = '../data/Rankings_20240218.csv'
     source_column = 'RPI'
 
     with open(GAMEFILE, 'rb') as fh:
